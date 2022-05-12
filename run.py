@@ -1,8 +1,12 @@
 import os
 import json
-from flask import Flask, render_template
+from flask import Flask, render_template, request, flash
+if os.path.exists("env.py"):
+    import env
+
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY")
 
 
 @app.route("/")
@@ -22,15 +26,18 @@ def about():
 def about_member(member_name):
     member = {}
     with open("data/company.json", "r") as json_data:
-        data = json.load(json_data)
+        data = json.load(json_data) #convert to json
         for obj in data:
             if obj["url"] == member_name:
-                member = obj
-    return "<h1>" + member["name"] + "</h1>"
+                member = obj #add it to the empty object in line 23
+    return render_template("member.html", member=member) #first member is variable name in HTML, second member is line 23
 
 
-@app.route("/contact")
+@app.route("/contact", methods=["GET", "POST"])
 def contact():
+    if request.method == "POST":
+        flash("Thanks {}, we have received your message!".format(
+            request.form.get("name")))
     return render_template("contact.html", page_title="Contact")
 
 
